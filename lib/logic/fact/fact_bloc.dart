@@ -5,7 +5,6 @@ import '../../data/repositories/cat_repository.dart';
 import 'fact_event.dart';
 import 'fact_state.dart';
 
-/// BLoC for managing random cat facts
 class FactBloc extends Bloc<FactEvent, FactState> {
   final CatRepository _repository;
 

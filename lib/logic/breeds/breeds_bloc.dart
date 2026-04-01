@@ -7,8 +7,6 @@ import '../../data/services/cache_service.dart';
 import 'breeds_event.dart';
 import 'breeds_state.dart';
 
-/// BLoC for managing breeds list with infinite scroll
-/// Uses droppable() transformer to prevent duplicate requests
 class BreedsBloc extends Bloc<BreedsEvent, BreedsState> {
   final CatRepository _repository;
   final CacheService _cacheService;
@@ -19,23 +17,9 @@ class BreedsBloc extends Bloc<BreedsEvent, BreedsState> {
   })  : _repository = repository,
         _cacheService = cacheService,
         super(const BreedsState()) {
-    // SENIOR LEVEL: Use droppable transformer to ignore duplicate events
-    // while one is already being processed
-    on<LoadInitialBreeds>(
-      _onLoadInitialBreeds,
-      transformer: droppable(),
-    );
-
-    on<LoadMoreBreeds>(
-      _onLoadMoreBreeds,
-      transformer: droppable(),
-    );
-
-    on<RefreshBreeds>(
-      _onRefreshBreeds,
-      transformer: droppable(),
-    );
-
+    on<LoadInitialBreeds>(_onLoadInitialBreeds, transformer: droppable());
+    on<LoadMoreBreeds>(_onLoadMoreBreeds, transformer: droppable());
+    on<RefreshBreeds>(_onRefreshBreeds, transformer: droppable());
     on<FilterBreeds>(_onFilterBreeds);
   }
 
@@ -45,7 +29,6 @@ class BreedsBloc extends Bloc<BreedsEvent, BreedsState> {
   ) async {
     emit(state.copyWith(status: BreedsStatus.loading));
 
-    // Try to load from cache first
     final cachedResponse = await _cacheService.getCachedFirstPageBreeds();
     if (cachedResponse != null) {
       emit(state.copyWith(
@@ -57,22 +40,16 @@ class BreedsBloc extends Bloc<BreedsEvent, BreedsState> {
         hasReachedMax: cachedResponse.currentPage >= cachedResponse.lastPage,
         isFromCache: true,
       ));
-
-      // Refresh in foreground so the emitter is still valid
       await _loadFreshData(emit);
       return;
     }
 
-    // No cache, load from network
     await _loadFreshData(emit);
   }
 
   Future<void> _loadFreshData(Emitter<BreedsState> emit) async {
-    final result = await _repository.getBreeds(
-      page: ApiConstants.firstPage,
-    );
+    final result = await _repository.getBreeds(page: ApiConstants.firstPage);
 
-    // Avoid async closures inside fold — pull the work out so it can be awaited
     final failure = result.fold((f) => f, (_) => null);
     if (failure != null) {
       emit(state.copyWith(
@@ -110,15 +87,12 @@ class BreedsBloc extends Bloc<BreedsEvent, BreedsState> {
 
     result.fold(
       (failure) {
-        // SENIOR LEVEL: Don't clear existing data on error
-        // Just show error and keep the list
         emit(state.copyWith(
           status: BreedsStatus.failure,
           errorMessage: failure.message,
         ));
       },
       (response) {
-        // Accumulate breeds for infinite scroll
         final updatedBreeds = List<Breed>.from(state.breeds)
           ..addAll(response.breeds);
 
@@ -141,12 +115,9 @@ class BreedsBloc extends Bloc<BreedsEvent, BreedsState> {
     RefreshBreeds event,
     Emitter<BreedsState> emit,
   ) async {
-    // Reset state and reload from page 1
     emit(const BreedsState(status: BreedsStatus.loading));
 
-    final result = await _repository.getBreeds(
-      page: ApiConstants.firstPage,
-    );
+    final result = await _repository.getBreeds(page: ApiConstants.firstPage);
 
     final failure = result.fold((f) => f, (_) => null);
     if (failure != null) {

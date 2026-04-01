@@ -1,10 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 
-/// Type alias for Result pattern using Either from fpdart
-/// Left represents failure/error, Right represents success
 typedef Result<T> = Either<Failure, T>;
 
-/// Base class for all failures in the application
 abstract class Failure {
   final String message;
   final String? code;
@@ -20,7 +17,6 @@ abstract class Failure {
   String toString() => 'Failure(message: $message, code: $code)';
 }
 
-/// Network-related failures
 class NetworkFailure extends Failure {
   const NetworkFailure({
     required super.message,
@@ -29,7 +25,6 @@ class NetworkFailure extends Failure {
   });
 }
 
-/// Server-related failures
 class ServerFailure extends Failure {
   const ServerFailure({
     required super.message,
@@ -38,7 +33,6 @@ class ServerFailure extends Failure {
   });
 }
 
-/// Cache-related failures
 class CacheFailure extends Failure {
   const CacheFailure({
     required super.message,
@@ -47,7 +41,6 @@ class CacheFailure extends Failure {
   });
 }
 
-/// Unknown failures
 class UnknownFailure extends Failure {
   const UnknownFailure({
     required super.message,

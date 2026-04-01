@@ -22,7 +22,6 @@ class BreedCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Hero only wraps the icon so it matches the destination widget
               Hero(
                 tag: 'breed_${breed.breed}',
                 child: Container(

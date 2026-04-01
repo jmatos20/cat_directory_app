@@ -115,5 +115,3 @@ blocTest<BreedsBloc, BreedsState>(
   ],
 );
 ```
-
-

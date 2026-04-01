@@ -55,7 +55,6 @@ class ErrorDisplay extends StatelessWidget {
   }
 }
 
-/// Widget for showing error at the bottom of a list (load more errors)
 class LoadMoreErrorWidget extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
@@ -91,7 +90,6 @@ class LoadMoreErrorWidget extends StatelessWidget {
   }
 }
 
-/// Loading indicator for bottom of list
 class LoadMoreIndicator extends StatelessWidget {
   const LoadMoreIndicator({super.key});
 

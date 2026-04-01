@@ -26,8 +26,6 @@ class _BreedListScreenState extends State<BreedListScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-
-    // Load initial breeds
     context.read<BreedsBloc>().add(const LoadInitialBreeds());
   }
 
@@ -63,16 +61,13 @@ class _BreedListScreenState extends State<BreedListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.brightness_6),
-            onPressed: () {
-              context.read<ThemeBloc>().add(const ToggleTheme());
-            },
+            onPressed: () => context.read<ThemeBloc>().add(const ToggleTheme()),
             tooltip: 'Cambiar tema',
           ),
         ],
       ),
       body: Column(
         children: [
-          // Search bar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -84,18 +79,14 @@ class _BreedListScreenState extends State<BreedListScreen> {
               onChanged: _onSearchChanged,
             ),
           ),
-          // Breeds list
           Expanded(
             child: BlocConsumer<BreedsBloc, BreedsState>(
               listener: (context, state) {
-                // Show snackbar for errors during load more
                 if (state.status == BreedsStatus.failure &&
                     state.breeds.isNotEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        state.errorMessage ?? 'Ocurrió un error',
-                      ),
+                      content: Text(state.errorMessage ?? 'Ocurrió un error'),
                       action: SnackBarAction(
                         label: 'Reintentar',
                         onPressed: () {
@@ -107,12 +98,10 @@ class _BreedListScreenState extends State<BreedListScreen> {
                 }
               },
               builder: (context, state) {
-                // Initial loading with skeleton
                 if (state.status == BreedsStatus.loading) {
                   return const BreedSkeletonLoader();
                 }
 
-                // Error on initial load
                 if (state.status == BreedsStatus.failure &&
                     state.breeds.isEmpty) {
                   return ErrorDisplay(
@@ -123,17 +112,14 @@ class _BreedListScreenState extends State<BreedListScreen> {
                   );
                 }
 
-                // Success - show list with pull to refresh
                 return RefreshIndicator(
                   onRefresh: () async {
                     context.read<BreedsBloc>().add(const RefreshBreeds());
-                    // Wait for the refresh to complete
-                    await context
-                        .read<BreedsBloc>()
-                        .stream
-                        .firstWhere((state) =>
-                            state.status == BreedsStatus.success ||
-                            state.status == BreedsStatus.failure);
+                    await context.read<BreedsBloc>().stream.firstWhere(
+                          (state) =>
+                              state.status == BreedsStatus.success ||
+                              state.status == BreedsStatus.failure,
+                        );
                   },
                   child: _buildBreedsList(state),
                 );
@@ -173,9 +159,8 @@ class _BreedListScreenState extends State<BreedListScreen> {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.only(top: 8, bottom: 16),
-      itemCount: breeds.length + 1, // +1 for loading indicator
+      itemCount: breeds.length + 1,
       itemBuilder: (context, index) {
-        // Loading indicator or error at the bottom
         if (index >= breeds.length) {
           if (state.status == BreedsStatus.loadingMore) {
             return const LoadMoreIndicator();
@@ -206,7 +191,6 @@ class _BreedListScreenState extends State<BreedListScreen> {
           return const SizedBox.shrink();
         }
 
-        // Breed card
         final breed = breeds[index];
         return BreedCard(
           breed: breed,
